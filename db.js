@@ -1,57 +1,106 @@
-const sqlite3 = require("sqlite3");
+const sqlite3 = require("sqlite3").verbose();
+const path = require("path");
 
-const db = new sqlite3.Database("./db.db");
-
-
-function add_movie(name, parts, watched, parts_watched, score) {
-  const now = new Date();
-  db.run("INSERT INTO movies (name, parts, added_date, watched, watched_date, parts_watched, score) VALUES(?, ?, ?, ?, ?, ?, ?)",
-    [name, parts, now.toDateString(), watched, now.toDateString(), parts_watched, score])
-}
-
-function update_name(id, name){
-  db.run("UPDATE movies SET name = ? WHERE id = ?", [name, id]);
-}
-
-function update_parts(id, parts){
-  db.run("UPDATE movies SET parts = ? WHERE movies.id = ?", [parts, id]);
-}
-
-function update_watched(id, watched){
-  db.run("UPDATE movies SET watched = ? WHERE movies.id = ?", [watched, id]);
-}
-
-function update_parts_watched(id, parts_watched) {
-  db.run("UPDATE movies SET parts_watched = ? WHERE movies.id = ?", [parts_watched, id]);
-}
-
-function update_score(id, score){
-  db.run("UPDATE movies SET score = ? WHERE movies.id = ?", [score, id])
-}
-
-function remove_movie(id){
-  db.run("DELETE FROM movies WHERE movies.id = ?", [id]);
-}
-
-function list_movies(id){
- return new Promise((resolve, reject) => {
-    db.all("SELECT * FROM movies", [], (err, rows) => {
-        if (err) {
-            reject(err);
-        } else {
-            resolve(rows);  // ← This sends the data to the `await`
-        }
-    });
+const db = new sqlite3.Database(path.resolve(__dirname, "./db.db"), (err) => {
+  if (err) {
+    console.error("❌ Error opening database:", err.message);
+  } else {
+    console.log("✅ Connected to SQLite database.");
+  }
 });
+
+// Utility to wrap db.run in a Promise
+function runQuery(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.run(sql, params, function (err) {
+      if (err) {
+        console.error("❌ SQL error:", err.message);
+        return reject(err);
+      }
+      resolve(this); // 'this' contains metadata like lastID or changes
+    });
+  });
 }
+
+// Utility to wrap db.all in a Promise
+function getAll(sql, params = []) {
+  return new Promise((resolve, reject) => {
+    db.all(sql, params, (err, rows) => {
+      if (err) {
+        console.error("❌ SQL error:", err.message);
+        return reject(err);
+      }
+      resolve(rows);
+    });
+  });
+}
+
+// Add a new movie
+async function add_movie(name, parts, watched, parts_watched, score) {
+  if (!name || typeof parts !== 'number') {
+    throw new Error("Invalid input for add_movie");
+  }
+  const now = new Date().toDateString();
+  return runQuery(
+    `INSERT INTO movies (name, parts, added_date, watched, watched_date, parts_watched, score) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    [name, parts, now, watched, now, parts_watched, score]
+  );
+}
+
+// Update functions
+async function update_name(id, name) {
+  if (!name) throw new Error("Name is required");
+  return runQuery(`UPDATE movies SET name = ? WHERE id = ?`, [name, id]);
+}
+
+async function update_parts(id, parts) {
+  if (typeof parts !== 'number') throw new Error("Parts must be a number");
+  return runQuery(`UPDATE movies SET parts = ? WHERE id = ?`, [parts, id]);
+}
+
+async function update_watched(id, watched) {
+  return runQuery(`UPDATE movies SET watched = ? WHERE id = ?`, [watched, id]);
+}
+
+async function update_parts_watched(id, parts_watched) {
+  return runQuery(`UPDATE movies SET parts_watched = ? WHERE id = ?`, [parts_watched, id]);
+}
+
+async function update_score(id, score) {
+  if (score != null && (score < 0 || score > 5)) {
+    throw new Error("Score must be between 0 and 5");
+  }
+  return runQuery(`UPDATE movies SET score = ? WHERE id = ?`, [score, id]);
+}
+
+async function remove_movie(id) {
+  return runQuery(`DELETE FROM movies WHERE id = ?`, [id]);
+}
+
+async function list_movies() {
+  return getAll(`SELECT * FROM movies`);
+}
+
+// Optional: Graceful shutdown
+process.on('SIGINT', () => {
+  db.close((err) => {
+    if (err) {
+      console.error("❌ Error closing database:", err.message);
+    } else {
+      console.log("🛑 Database connection closed.");
+    }
+    process.exit();
+  });
+});
 
 module.exports = {
-  add_movie: add_movie,
-  update_name: update_name,
-  update_parts: update_parts,
-  update_watched: update_watched,
-  update_parts_watched: update_parts_watched,
-  update_score: update_score,
-  remove_movie: remove_movie,
-  list_movies: list_movies
-}
+  add_movie,
+  update_name,
+  update_parts,
+  update_watched,
+  update_parts_watched,
+  update_score,
+  remove_movie,
+  list_movies,
+};
+

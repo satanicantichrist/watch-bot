@@ -1,3 +1,4 @@
+
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require("../../db.js");
 
@@ -20,11 +21,19 @@ function createUnwatchedMoviesEmbed(movies) {
 
     for (const movie of unwatched) {
         const partsWatched = movie.parts_watched || 'None';
-        const score = movie.score ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5` : 'Not rated';
+        const score = movie.score
+            ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
+            : 'Not rated';
+
+        // If only 1 part, skip showing partsWatched
+        const watchedLine =
+            Number(movie.parts) === 1
+                ? `• Watched: ❌ No`
+                : `• Watched: ❌ No (${partsWatched})`;
 
         const description = [
             `• Parts: ${movie.parts}`,
-            `• Watched: ❌ No (${partsWatched})`,
+            watchedLine,
             `• Added: ${movie.added_date}`,
             `• Score: ${score}`,
         ].join('\n');
@@ -39,6 +48,7 @@ function createUnwatchedMoviesEmbed(movies) {
 }
 
 
+
 function createMoviesEmbed(movies) {
     const embed = new EmbedBuilder()
         .setTitle('🎬 Movie List')
@@ -50,11 +60,19 @@ function createMoviesEmbed(movies) {
         const watched = movie.watched === '1' ? '✅ Yes' : '❌ No';
         const partsWatched = movie.parts_watched || 'N/A';
         const watchedDate = movie.watched_date || 'N/A';
-        const score = '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`;
+        const score = movie.score
+            ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
+            : 'Not rated';
+
+        // Only show partsWatched if more than 1 part or not watched
+        const watchedLine =
+            movie.watched === '1' && Number(movie.parts) === 1
+                ? `• Watched: ${watched}`
+                : `• Watched: ${watched} (${partsWatched})`;
 
         const description = [
             `• Parts: ${movie.parts}`,
-            `• Watched: ${watched} (${partsWatched})`,
+            watchedLine,
             `• Added: ${movie.added_date}`,
             `• Watched on: ${watchedDate}`,
             `• Score: ${score}`,
@@ -78,17 +96,13 @@ module.exports = {
       .setDescription("List unwatched movies")
     ),
 
-
 	async execute(interaction) {
-
     const movies = await db.list_movies();
     const unwatched = interaction.options.getBoolean("unwatched");
-    var embed = "";
-    if (unwatched) {
-      embed = createUnwatchedMoviesEmbed(movies)
-    }else {
-      embed = createMoviesEmbed(movies)
-    }
+
+    const embed = unwatched
+      ? createUnwatchedMoviesEmbed(movies)
+      : createMoviesEmbed(movies);
 
     await interaction.reply({ embeds: [embed] });
 	},
