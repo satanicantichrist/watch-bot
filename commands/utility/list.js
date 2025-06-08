@@ -1,110 +1,125 @@
 
-const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
-const db = require("../../db.js");
 
-function createUnwatchedMoviesEmbed(movies) {
-    const unwatched = movies.filter(movie => movie.watched === '0');
+const {
+  SlashCommandBuilder,
+  EmbedBuilder,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle
+} = require('discord.js');
+const db = require('../../db.js');
 
-    if (unwatched.length === 0) {
-        return new EmbedBuilder()
-            .setTitle('🎬 Unwatched Movies')
-            .setDescription('✅ You have watched all movies! Nothing to show here.')
-            .setColor('Green')
-            .setTimestamp();
-    }
+const MOVIES_PER_PAGE = 5;
 
-    const embed = new EmbedBuilder()
-        .setTitle('🎬 Unwatched Movies')
-        .setColor('#ff5050') // red-ish
-        .setTimestamp()
-        .setFooter({ text: 'Your Movie Tracker Bot' });
+function paginateMovies(movies, page = 0) {
+  const totalPages = Math.ceil(movies.length / MOVIES_PER_PAGE);
+  const start = page * MOVIES_PER_PAGE;
+  const currentMovies = movies.slice(start, start + MOVIES_PER_PAGE);
 
-    for (const movie of unwatched) {
-        const partsWatched = movie.parts_watched || 'None';
-        const score = movie.score
-            ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
-            : 'Not rated';
+  const embed = new EmbedBuilder()
+    .setTitle('🎬 Movie List')
+    .setColor('#00bfff')
+    .setTimestamp()
+    .setFooter({ text: `Page ${page + 1} of ${totalPages} • Your Movie Tracker Bot` });
 
-        // If only 1 part, skip showing partsWatched
-        const watchedLine =
-            Number(movie.parts) === 1
-                ? `• Watched: ❌ No`
-                : `• Watched: ❌ No (${partsWatched})`;
+  for (const movie of currentMovies) {
+    const watched = movie.watched === '1' ? '✅ Yes' : '❌ No';
+    const partsWatched = movie.parts_watched || 'N/A';
+    const watchedDate = movie.watched_date || 'N/A';
+    const score = movie.score
+      ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
+      : 'Not rated';
 
-        const description = [
-            `• Parts: ${movie.parts}`,
-            watchedLine,
-            `• Added: ${movie.added_date}`,
-            `• Score: ${score}`,
-        ].join('\n');
+    const watchedLine =
+      movie.watched === '1' && Number(movie.parts) === 1
+        ? `• Watched: ✅ Yes`
+        : `• Watched: ${watched} (${partsWatched})`;
 
-        embed.addFields({
-            name: `🎬 ${movie.name} - ${movie.id}`,
-            value: description,
-        });
-    }
+    const description = [
+      `• Parts: ${movie.parts}`,
+      watchedLine,
+      `• Added: ${movie.added_date}`,
+      `• Watched on: ${watchedDate}`,
+      `• Score: ${score}`,
+    ].join('\n');
 
-    return embed;
-}
+    embed.addFields({
+      name: `🎬 ${movie.name} - ${movie.id}`,
+      value: description,
+    });
+  }
 
-
-
-function createMoviesEmbed(movies) {
-    const embed = new EmbedBuilder()
-        .setTitle('🎬 Movie List')
-        .setColor('#00bfff') // light blue
-        .setTimestamp()
-        .setFooter({ text: 'Your Movie Tracker Bot' });
-
-    for (const movie of movies) {
-        const watched = movie.watched === '1' ? '✅ Yes' : '❌ No';
-        const partsWatched = movie.parts_watched || 'N/A';
-        const watchedDate = movie.watched_date || 'N/A';
-        const score = movie.score
-            ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
-            : 'Not rated';
-
-        // Only show partsWatched if more than 1 part or not watched
-        const watchedLine =
-            movie.watched === '1' && Number(movie.parts) === 1
-                ? `• Watched: ${watched}`
-                : `• Watched: ${watched} (${partsWatched})`;
-
-        const description = [
-            `• Parts: ${movie.parts}`,
-            watchedLine,
-            `• Added: ${movie.added_date}`,
-            `• Watched on: ${watchedDate}`,
-            `• Score: ${score}`,
-        ].join('\n');
-
-        embed.addFields({
-            name: `🎬 ${movie.name} - ${movie.id}`,
-            value: description,
-        });
-    }
-
-    return embed;
+  return { embed, totalPages };
 }
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName('list')
-		.setDescription('List movies.')
+  data: new SlashCommandBuilder()
+    .setName('list')
+    .setDescription('List movies with pagination.')
     .addBooleanOption(option =>
-      option.setName("unwatched")
-      .setDescription("List unwatched movies")
+      option.setName('unwatched')
+        .setDescription('List only unwatched movies')
     ),
 
-	async execute(interaction) {
+  async execute(interaction) {
     const movies = await db.list_movies();
-    const unwatched = interaction.options.getBoolean("unwatched");
+    const unwatchedOnly = interaction.options.getBoolean('unwatched');
+    const filteredMovies = unwatchedOnly
+      ? movies.filter(m => m.watched === '0')
+      : movies;
 
-    const embed = unwatched
-      ? createUnwatchedMoviesEmbed(movies)
-      : createMoviesEmbed(movies);
+    if (filteredMovies.length === 0) {
+      return interaction.reply({
+        content: 'No movies found for this view.',
+        ephemeral: true
+      });
+    }
 
-    await interaction.reply({ embeds: [embed] });
-	},
+    let page = 0;
+    const { embed, totalPages } = paginateMovies(filteredMovies, page);
+
+    const prevButton = new ButtonBuilder()
+      .setCustomId('prev_page')
+      .setLabel('⬅️ Previous')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(true);
+
+    const nextButton = new ButtonBuilder()
+      .setCustomId('next_page')
+      .setLabel('Next ➡️')
+      .setStyle(ButtonStyle.Primary)
+      .setDisabled(totalPages <= 1);
+
+    const row = new ActionRowBuilder().addComponents(prevButton, nextButton);
+
+    await interaction.reply({ embeds: [embed], components: [row] });
+    const message = await interaction.fetchReply();
+
+    const collector = message.createMessageComponentCollector({ time: 60_000 });
+
+    collector.on('collect', async i => {
+      if (i.user.id !== interaction.user.id) {
+        return i.reply({ content: "These buttons aren't for you.", ephemeral: true });
+      }
+
+      if (i.customId === 'prev_page') {
+        page--;
+      } else if (i.customId === 'next_page') {
+        page++;
+      }
+
+      const { embed: newEmbed } = paginateMovies(filteredMovies, page);
+      prevButton.setDisabled(page === 0);
+      nextButton.setDisabled(page >= totalPages - 1);
+
+      await i.update({ embeds: [newEmbed], components: [row] });
+    });
+
+    collector.on('end', () => {
+      prevButton.setDisabled(true);
+      nextButton.setDisabled(true);
+      interaction.editReply({ components: [row] }).catch(() => {});
+    });
+  }
 };
 
