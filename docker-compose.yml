@@ -1,0 +1,8 @@
+services:
+  discord-bot:
+    image: watch-bot
+    container_name: discord-bot
+    volumes:
+      - ./watch-bot/db.db:/usr/src/app/db.db
+      - ./watch-bot/config.json:/usr/src/app/config.json
+    restart: unless-stopped

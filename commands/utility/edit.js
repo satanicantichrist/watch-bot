@@ -27,6 +27,10 @@ module.exports = {
         .setDescription("Parts watched")
     )
     .addStringOption(option =>
+      option.setName("genre")
+        .setDescription("Movie genre")
+    )
+    .addStringOption(option =>
       option.setName("score")
         .setDescription("Score 1-5")
         .addChoices(
@@ -44,6 +48,7 @@ module.exports = {
     const episodes = interaction.options.getInteger("episodes");
     const watched = interaction.options.getBoolean("watched");
     const parts_watched = interaction.options.getString("parts_watched");
+    const genre = interaction.options.getString("genre");
     const scoreStr = interaction.options.getString("score");
     const score = scoreStr ? parseInt(scoreStr, 10) : null;
 
@@ -73,6 +78,11 @@ module.exports = {
       if (score !== null) {
         await db.update_score(id, score);
         updatedFields.push({ name: "Score", value: "⭐".repeat(score) + ` (${score}/5)`, inline: true });
+      }
+
+      if (genre !== null) {
+        await db.update_genre(id, genre);
+        updatedFields.push({ name: "Genre", value: genre, inline:true });
       }
 
       if (updatedFields.length === 0) {

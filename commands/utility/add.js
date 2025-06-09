@@ -23,6 +23,10 @@ module.exports = {
         .setDescription("Parts watched")
     )
     .addStringOption(option =>
+      option.setName("genre")
+        .setDescription("Movie genre")
+  )
+    .addStringOption(option =>
       option.setName("score")
         .setDescription("Score 1-5")
         .addChoices(
@@ -39,11 +43,12 @@ module.exports = {
     const episodes = interaction.options.getInteger("episodes") ?? 1;
     const watched = interaction.options.getBoolean("watched") ?? false;
     const parts_watched = interaction.options.getString("parts_watched") ?? "None";
+    const genre = interaction.options.getString("genre") ?? "None";
     const scoreStr = interaction.options.getString("score");
     const score = scoreStr ? parseInt(scoreStr, 10) : null;
 
     try {
-      await db.add_movie(name, episodes, watched ? 1 : 0, parts_watched, score);
+      await db.add_movie(name, episodes, watched ? 1 : 0, parts_watched, score, genre);
 
       const embed = new EmbedBuilder()
         .setColor("#2c0a41")
@@ -53,6 +58,7 @@ module.exports = {
           { name: "Episodes", value: episodes.toString(), inline: true },
           { name: "Watched", value: watched ? "✅ Yes" : "❌ No", inline: true },
           { name: "Parts Watched", value: parts_watched, inline: true },
+          { name: "Genre", value: genre, inline: true },
           { name: "Score", value: score !== null ? "⭐".repeat(score) + ` (${score}/5)` : "Not rated", inline: true }
         );
 

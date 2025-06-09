@@ -37,6 +37,7 @@ function paginateMovies(movies, page = 0) {
 
     const description = [
       `• Parts: ${movie.parts}`,
+      `• Genre: ${movie.genre}`,
       watchedLine,
       `• Added: ${movie.added_date}`,
       `• Watched on: ${watchedDate}`,
