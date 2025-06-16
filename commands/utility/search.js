@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require('discord.js');
 const db = require('../../db.js');
+const tools = require("../../tools.js")
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -57,7 +58,7 @@ module.exports = {
           { name: 'Parts Watched', value: partsWatched, inline: true },
           { name: 'Added Date', value: movie.added_date, inline: true },
           { name: 'Watched Date', value: watchedDate, inline: true },
-          { name: "Genre", value: genre, inline: true },
+          { name: "Genre", value: tools.getGenreFromValue(genre), inline: true },
           { name: 'Score', value: score, inline: true },
           { name: 'Page', value: `${page + 1} / ${matched.length}`, inline: true }
         )

@@ -1,5 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require("../../db.js");
+const tools = require("../../tools.js")
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -29,11 +30,14 @@ module.exports = {
     .addStringOption(option =>
       option.setName("genre")
         .setDescription("Movie genre")
+        .addChoices(tools.genreMap)
+
     )
     .addStringOption(option =>
       option.setName("score")
         .setDescription("Score 1-5")
         .addChoices(
+          { name: "Nehodnoceno", value: "0"},
           { name: "*", value: "1" },
           { name: "**", value: "2" },
           { name: "***", value: "3" },
@@ -76,7 +80,7 @@ module.exports = {
       }
 
       if (score !== null) {
-        await db.update_score(id, score);
+        await db.update_score(id, score === 0 ? null : score);
         updatedFields.push({ name: "Score", value: "⭐".repeat(score) + ` (${score}/5)`, inline: true });
       }
 

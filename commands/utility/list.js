@@ -8,6 +8,7 @@ const {
   ButtonStyle
 } = require('discord.js');
 const db = require('../../db.js');
+const tools = require("../../tools.js")
 
 const MOVIES_PER_PAGE = 5;
 
@@ -37,7 +38,7 @@ function paginateMovies(movies, page = 0) {
 
     const description = [
       `• Parts: ${movie.parts}`,
-      `• Genre: ${movie.genre}`,
+      `• Genre: ${tools.getGenreFromValue(movie.genre)}`,
       watchedLine,
       `• Added: ${movie.added_date}`,
       `• Watched on: ${watchedDate}`,

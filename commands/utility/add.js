@@ -1,6 +1,6 @@
 const { SlashCommandBuilder, EmbedBuilder } = require('discord.js');
 const db = require("../../db.js");
-
+const tools = require("../../tools.js")
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('add')
@@ -25,11 +25,13 @@ module.exports = {
     .addStringOption(option =>
       option.setName("genre")
         .setDescription("Movie genre")
+        .addChoices(tools.genreMap)
   )
     .addStringOption(option =>
       option.setName("score")
         .setDescription("Score 1-5")
         .addChoices(
+          { name: "Nehodnoceno", value: "0"},
           { name: "*", value: "1" },
           { name: "**", value: "2" },
           { name: "***", value: "3" },
@@ -44,7 +46,7 @@ module.exports = {
     const watched = interaction.options.getBoolean("watched") ?? false;
     const parts_watched = interaction.options.getString("parts_watched") ?? "None";
     const genre = interaction.options.getString("genre") ?? "None";
-    const scoreStr = interaction.options.getString("score");
+    const scoreStr = interaction.options.getString("score") === "0" ? null : interaction.options.getString("score");
     const score = scoreStr ? parseInt(scoreStr, 10) : null;
 
     try {
