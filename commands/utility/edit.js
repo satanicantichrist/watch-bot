@@ -21,11 +21,11 @@ module.exports = {
     )
     .addBooleanOption(option =>
       option.setName("watched")
-        .setDescription("Byl vyděn")
+        .setDescription("Byl viděn")
     )
     .addStringOption(option =>
       option.setName("parts_watched")
-        .setDescription("Vyděné epizody")
+        .setDescription("Viděné epizody")
     )
     .addStringOption(option =>
       option.setName("genre")
@@ -71,12 +71,12 @@ module.exports = {
 
       if (watched !== null) {
         await db.update_watched(id, watched ? 1 : 0);
-        updatedFields.push({ name: "Vyděno", value: watched ? "✅ Ano" : "❌ Ne", inline: true });
+        updatedFields.push({ name: "Viděno", value: watched ? "✅ Ano" : "❌ Ne", inline: true });
       }
 
       if (parts_watched) {
         await db.update_parts_watched(id, parts_watched);
-        updatedFields.push({ name: "Epizody vyděny", value: parts_watched, inline: true });
+        updatedFields.push({ name: "Epizody viděny", value: parts_watched, inline: true });
       }
 
       if (score !== null) {
@@ -101,7 +101,7 @@ module.exports = {
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error("Error updating movie:", error);
-      await interaction.reply({ content: "❌ Failed to update movie. Please try again later.", ephemeral: true });
+      await interaction.reply({ content: "❌ Film nebylo možno aktualizovat.", ephemeral: true });
     }
   },
 };

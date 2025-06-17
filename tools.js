@@ -3,7 +3,9 @@ const genreMap = [
   { name: "Akční", value: "action" },
   { name: "Pohádka", value: "kids" },
   { name: "Komedie", value: "comedy" },
-  { name: "Fantazi", value: "fantazi" },
+  { name: "Fantasy", value: "fantazi" },
+  { name: "Anime", value: "anime"},
+  { name: "Anime film", value: "anime_movie"}
   { name: "Žádný", value: "none" }
 ];
 

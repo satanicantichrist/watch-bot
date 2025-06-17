@@ -16,11 +16,11 @@ module.exports = {
     )
     .addBooleanOption(option =>
       option.setName("watched")
-        .setDescription("Byl už vyděn")
+        .setDescription("Byl už viděn")
     )
     .addStringOption(option =>
       option.setName("parts_watched")
-        .setDescription("Vyděné epizody")
+        .setDescription("Viděné epizody")
     )
     .addStringOption(option =>
       option.setName("genre")
@@ -58,8 +58,8 @@ module.exports = {
         .setDescription(`**${name}** Byl přidán do seznamu`)
         .addFields(
           { name: "Epizody", value: episodes.toString(), inline: true },
-          { name: "Vyděno", value: watched ? "✅ Ano" : "❌ Ne", inline: true },
-          { name: "Epizody vyděny", value: parts_watched, inline: true },
+          { name: "Viděno", value: watched ? "✅ Ano" : "❌ Ne", inline: true },
+          { name: "Epizody viděny", value: parts_watched, inline: true },
           { name: "Žánr", value: tools.getGenreFromValue(genre), inline: true },
           { name: "Hodnocení", value: score !== null ? "⭐".repeat(score) + ` (${score}/5)` : "Nehodnoceno", inline: true }
         );

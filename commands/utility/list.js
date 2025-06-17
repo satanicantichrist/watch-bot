@@ -18,7 +18,7 @@ function paginateMovies(movies, page = 0) {
   const currentMovies = movies.slice(start, start + MOVIES_PER_PAGE);
 
   const embed = new EmbedBuilder()
-    .setTitle('🎬 Sezanm filmů')
+    .setTitle('🎬 Seznam filmů')
     .setColor('#00bfff')
     .setTimestamp()
     .setFooter({ text: `Strana ${page + 1} z ${totalPages}` });
@@ -33,15 +33,15 @@ function paginateMovies(movies, page = 0) {
 
     const watchedLine =
       movie.watched === '1' && Number(movie.parts) === 1
-        ? `• Vyděno: ✅ Yes`
-        : `• Vyděno: ${watched} (${partsWatched})`;
+        ? `• Viděno: ✅ Yes`
+        : `• Viděno: ${watched} (${partsWatched})`;
 
     const description = [
       `• Epizody: ${movie.parts}`,
       `• Žánr: ${tools.getGenreFromValue(movie.genre)}`,
       watchedLine,
       `• Přidáno dne: ${movie.added_date}`,
-      `• Vyděno dne: ${watchedDate}`,
+      `• Viděno dne: ${watchedDate}`,
       `• Hodnocení: ${score}`,
     ].join('\n');
 
@@ -60,7 +60,7 @@ module.exports = {
     .setDescription('Seznam filmů v seznamu')
     .addBooleanOption(option =>
       option.setName('unwatched')
-        .setDescription('Seznam nevyděných filmů v seznamu')
+        .setDescription('Seznam neviděných filmů v seznamu')
     ),
 
   async execute(interaction) {

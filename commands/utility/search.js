@@ -39,7 +39,7 @@ module.exports = {
 
     function createEmbed(movie) {
       const watched = movie.watched === '1';
-      const watchedText = watched ? '✅ Vyděno' : '❌ Nevyděno';
+      const watchedText = watched ? '✅ Viděno' : '❌ Neviděno';
       const color = watched ? 'Green' : 'Red';
 
       const partsWatched = movie.parts_watched || 'N/A';
@@ -54,10 +54,10 @@ module.exports = {
         .setColor(color)
         .addFields(
           { name: 'Epizody', value: `${movie.parts}`, inline: true },
-          { name: 'Vyděno', value: watchedText, inline: true },
-          { name: 'Vyděné epizody', value: partsWatched, inline: true },
+          { name: 'Viděno', value: watchedText, inline: true },
+          { name: 'Viděné epizody', value: partsWatched, inline: true },
           { name: 'Přidáno dne', value: movie.added_date, inline: true },
-          { name: 'Vyděno dne', value: watchedDate, inline: true },
+          { name: 'Viděno dne', value: watchedDate, inline: true },
           { name: "Žánr", value: tools.getGenreFromValue(genre), inline: true },
           { name: 'Hodnocení', value: score, inline: true },
           { name: 'Strana', value: `${page + 1} / ${matched.length}`, inline: true }

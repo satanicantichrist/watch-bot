@@ -14,7 +14,7 @@ module.exports = {
     )
     .addBooleanOption(option =>
       option.setName("watched")
-        .setDescription("Filtrovat podle vydění")
+        .setDescription("Filtrovat podle vidění")
         .setRequired(false)
     ),
 
@@ -53,11 +53,11 @@ module.exports = {
         .addFields(
           { name: "Epizody", value: movie.parts?.toString() || "N/A", inline: true },
           { name: "Hodnocení", value: movie.score  ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
-      : 'Not rated', inline: true },
+      : 'Nehodnoceno', inline: true },
           { name: "Žánr", value: tools.getGenreFromValue(movie.genre) || "N/A", inline: true },
-          { name: "Vyděno", value: movie.watched == 1 ? "✅ Ano" : "❌ Ne", inline: true },
-          { name: "Vyděno dne", value: movie.watched_date || "N/A", inline: true },
-          { name: "Vyděné epizody", value: movie.parts_watched || "N/A", inline: true },
+          { name: "Viděno", value: movie.watched == 1 ? "✅ Ano" : "❌ Ne", inline: true },
+          { name: "Viděno dne", value: movie.watched_date || "N/A", inline: true },
+          { name: "Viděné epizody", value: movie.parts_watched || "N/A", inline: true },
           { name: "Přidáno dne", value: movie.added_date || "N/A", inline: false }
         )
 
@@ -65,7 +65,7 @@ module.exports = {
 
     } catch (error) {
       console.error("❌ Error in /random command:", error);
-      await interaction.reply("❌ Something went wrong while fetching a movie.");
+      await interaction.reply("❌ Nebylo možno vybrat film.");
     }
   },
 };
