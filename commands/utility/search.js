@@ -5,10 +5,10 @@ const tools = require("../../tools.js")
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('search')
-    .setDescription('Search for a movie by name')
+    .setDescription('Vyhledat film podle názvu')
     .addStringOption(option =>
       option.setName('name')
-        .setDescription('Name of the movie to search for')
+        .setDescription('Název filmu')
         .setRequired(true)
     ),
 
@@ -27,8 +27,8 @@ module.exports = {
 
     if (matched.length === 0) {
       const notFoundEmbed = new EmbedBuilder()
-        .setTitle('🎬 Movie Not Found')
-        .setDescription(`No movies found matching **${query}**.`)
+        .setTitle('🎬 Film nenalezen')
+        .setDescription(`Nebyly nalezeny žádné filmy odpovídající: **${query}**.`)
         .setColor('Red')
         .setTimestamp();
 
@@ -39,7 +39,7 @@ module.exports = {
 
     function createEmbed(movie) {
       const watched = movie.watched === '1';
-      const watchedText = watched ? '✅ Watched' : '❌ Not Watched';
+      const watchedText = watched ? '✅ Vyděno' : '❌ Nevyděno';
       const color = watched ? 'Green' : 'Red';
 
       const partsWatched = movie.parts_watched || 'N/A';
@@ -47,20 +47,20 @@ module.exports = {
       const genre = movie.genre ?? "None"
       const score = movie.score
         ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
-        : 'Not rated';
+        : 'Nehodnoceno';
 
       return new EmbedBuilder()
         .setTitle(`🎬 ${movie.name} - ID: ${movie.id}`)
         .setColor(color)
         .addFields(
-          { name: 'Parts', value: `${movie.parts}`, inline: true },
-          { name: 'Watched', value: watchedText, inline: true },
-          { name: 'Parts Watched', value: partsWatched, inline: true },
-          { name: 'Added Date', value: movie.added_date, inline: true },
-          { name: 'Watched Date', value: watchedDate, inline: true },
-          { name: "Genre", value: tools.getGenreFromValue(genre), inline: true },
-          { name: 'Score', value: score, inline: true },
-          { name: 'Page', value: `${page + 1} / ${matched.length}`, inline: true }
+          { name: 'Epizody', value: `${movie.parts}`, inline: true },
+          { name: 'Vyděno', value: watchedText, inline: true },
+          { name: 'Vyděné epizody', value: partsWatched, inline: true },
+          { name: 'Přidáno dne', value: movie.added_date, inline: true },
+          { name: 'Vyděno dne', value: watchedDate, inline: true },
+          { name: "Žánr", value: tools.getGenreFromValue(genre), inline: true },
+          { name: 'Hodnocení', value: score, inline: true },
+          { name: 'Strana', value: `${page + 1} / ${matched.length}`, inline: true }
         )
         .setTimestamp();
     }
@@ -77,7 +77,7 @@ module.exports = {
 
     collector.on('collect', i => {
       if (i.user.id !== interaction.user.id) {
-        return i.reply({ content: "These buttons aren't for you!", ephemeral: true });
+        return i.reply({ content: "Tato tlačítka nejsou pro tebe", ephemeral: true });
       }
 
       if (i.customId === 'prev') {
@@ -96,12 +96,12 @@ module.exports = {
       const disabledRow = new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId('prev')
-          .setLabel('Previous')
+          .setLabel('Zpět')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(true),
         new ButtonBuilder()
           .setCustomId('next')
-          .setLabel('Next')
+          .setLabel('Další')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(true)
       );
@@ -113,12 +113,12 @@ module.exports = {
       return new ActionRowBuilder().addComponents(
         new ButtonBuilder()
           .setCustomId('prev')
-          .setLabel('Previous')
+          .setLabel('Zpět')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(total <= 1),
         new ButtonBuilder()
           .setCustomId('next')
-          .setLabel('Next')
+          .setLabel('Další')
           .setStyle(ButtonStyle.Primary)
           .setDisabled(total <= 1)
       );

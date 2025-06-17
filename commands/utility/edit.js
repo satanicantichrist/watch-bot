@@ -5,37 +5,37 @@ const tools = require("../../tools.js")
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('edit')
-    .setDescription('Edits movie info')
+    .setDescription('Upraví informace o filmu')
     .addIntegerOption(option =>
       option.setName("id")
-        .setDescription("Movie id")
+        .setDescription("ID filmu")
         .setRequired(true)
     )
     .addStringOption(option =>
       option.setName("name")
-        .setDescription("Movie name")
+        .setDescription("Název filmu")
     )
     .addIntegerOption(option =>
       option.setName("episodes")
-        .setDescription("Number of episodes")
+        .setDescription("Počet epizod")
     )
     .addBooleanOption(option =>
       option.setName("watched")
-        .setDescription("If it was watched")
+        .setDescription("Byl vyděn")
     )
     .addStringOption(option =>
       option.setName("parts_watched")
-        .setDescription("Parts watched")
+        .setDescription("Vyděné epizody")
     )
     .addStringOption(option =>
       option.setName("genre")
-        .setDescription("Movie genre")
+        .setDescription("Žánr")
         .addChoices(tools.genreMap)
 
     )
     .addStringOption(option =>
       option.setName("score")
-        .setDescription("Score 1-5")
+        .setDescription("Hodnocení")
         .addChoices(
           { name: "Nehodnoceno", value: "0"},
           { name: "*", value: "1" },
@@ -61,41 +61,41 @@ module.exports = {
 
       if (name) {
         await db.update_name(id, name);
-        updatedFields.push({ name: "Name", value: name, inline: true });
+        updatedFields.push({ name: "Název", value: name, inline: true });
       }
 
       if (episodes !== null) {
         await db.update_parts(id, episodes);
-        updatedFields.push({ name: "Episodes", value: episodes.toString(), inline: true });
+        updatedFields.push({ name: "Epizody", value: episodes.toString(), inline: true });
       }
 
       if (watched !== null) {
         await db.update_watched(id, watched ? 1 : 0);
-        updatedFields.push({ name: "Watched", value: watched ? "✅ Yes" : "❌ No", inline: true });
+        updatedFields.push({ name: "Vyděno", value: watched ? "✅ Ano" : "❌ Ne", inline: true });
       }
 
       if (parts_watched) {
         await db.update_parts_watched(id, parts_watched);
-        updatedFields.push({ name: "Parts Watched", value: parts_watched, inline: true });
+        updatedFields.push({ name: "Epizody vyděny", value: parts_watched, inline: true });
       }
 
       if (score !== null) {
         await db.update_score(id, score === 0 ? null : score);
-        updatedFields.push({ name: "Score", value: "⭐".repeat(score) + ` (${score}/5)`, inline: true });
+        updatedFields.push({ name: "Hodnocení", value: "⭐".repeat(score) + ` (${score}/5)`, inline: true });
       }
 
       if (genre !== null) {
         await db.update_genre(id, genre);
-        updatedFields.push({ name: "Genre", value: genre, inline:true });
+        updatedFields.push({ name: "Žánr", value: tools.getGenreFromValue(genre), inline:true });
       }
 
       if (updatedFields.length === 0) {
-        return interaction.reply({ content: "No fields to update were provided.", ephemeral: true });
+        return interaction.reply({ content: "Nic nebylo aktualizováno", ephemeral: true });
       }
 
       const embed = new EmbedBuilder()
         .setColor("#2c0a41")
-        .setTitle("Movie Updated")
+        .setTitle("Film upraven")
         .addFields(updatedFields);
 
       await interaction.reply({ embeds: [embed] });
