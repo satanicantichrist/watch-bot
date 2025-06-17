@@ -4,10 +4,10 @@ const db = require("../../db.js");
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('remove')
-    .setDescription('Removes a movie from the list.')
+    .setDescription('Odstraní film ze seznamu')
     .addIntegerOption(option =>
       option.setName("id")
-        .setDescription("Movie ID to remove")
+        .setDescription("ID filmu")
         .setRequired(true)
     ),
 
@@ -21,7 +21,7 @@ module.exports = {
 
       if (!movie) {
         return interaction.reply({
-          content: `❌ Movie with ID \`${id}\` not found.`,
+          content: `❌ Film s ID \`${id}\` nebyl nalezen.`,
           ephemeral: true
         });
       }
@@ -30,14 +30,14 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor("#a83232")
-        .setTitle("🎞️ Movie Removed")
-        .setDescription(`Removed **${movie.name}** (ID: ${movie.id})`);
+        .setTitle("🎞️ Film odstraněn")
+        .setDescription(`Odstraněno **${movie.name}** (ID: ${movie.id})`);
 
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error("Error removing movie:", error);
       await interaction.reply({
-        content: "❌ Failed to remove movie. Please try again later.",
+        content: "❌ Chyba při odstraňování filmu ze seznamu.",
         ephemeral: true
       });
     }

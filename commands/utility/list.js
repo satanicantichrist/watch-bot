@@ -18,31 +18,31 @@ function paginateMovies(movies, page = 0) {
   const currentMovies = movies.slice(start, start + MOVIES_PER_PAGE);
 
   const embed = new EmbedBuilder()
-    .setTitle('🎬 Movie List')
+    .setTitle('🎬 Sezanm filmů')
     .setColor('#00bfff')
     .setTimestamp()
-    .setFooter({ text: `Page ${page + 1} of ${totalPages} • Your Movie Tracker Bot` });
+    .setFooter({ text: `Strana ${page + 1} z ${totalPages}` });
 
   for (const movie of currentMovies) {
-    const watched = movie.watched === '1' ? '✅ Yes' : '❌ No';
+    const watched = movie.watched === '1' ? '✅ Ano' : '❌ Ne';
     const partsWatched = movie.parts_watched || 'N/A';
     const watchedDate = movie.watched_date || 'N/A';
     const score = movie.score
       ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
-      : 'Not rated';
+      : 'Nehodnoceno';
 
     const watchedLine =
       movie.watched === '1' && Number(movie.parts) === 1
-        ? `• Watched: ✅ Yes`
-        : `• Watched: ${watched} (${partsWatched})`;
+        ? `• Vyděno: ✅ Yes`
+        : `• Vyděno: ${watched} (${partsWatched})`;
 
     const description = [
-      `• Parts: ${movie.parts}`,
-      `• Genre: ${tools.getGenreFromValue(movie.genre)}`,
+      `• Epizody: ${movie.parts}`,
+      `• Žánr: ${tools.getGenreFromValue(movie.genre)}`,
       watchedLine,
-      `• Added: ${movie.added_date}`,
-      `• Watched on: ${watchedDate}`,
-      `• Score: ${score}`,
+      `• Přidáno dne: ${movie.added_date}`,
+      `• Vyděno dne: ${watchedDate}`,
+      `• Hodnocení: ${score}`,
     ].join('\n');
 
     embed.addFields({
@@ -57,10 +57,10 @@ function paginateMovies(movies, page = 0) {
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('list')
-    .setDescription('List movies with pagination.')
+    .setDescription('Seznam filmů v seznamu')
     .addBooleanOption(option =>
       option.setName('unwatched')
-        .setDescription('List only unwatched movies')
+        .setDescription('Seznam nevyděných filmů v seznamu')
     ),
 
   async execute(interaction) {
@@ -72,8 +72,7 @@ module.exports = {
 
     if (filteredMovies.length === 0) {
       return interaction.reply({
-        content: 'No movies found for this view.',
-        ephemeral: true
+        content: 'Nebyly nalezeny žádné filmy.',
       });
     }
 
@@ -82,13 +81,13 @@ module.exports = {
 
     const prevButton = new ButtonBuilder()
       .setCustomId('prev_page')
-      .setLabel('⬅️ Previous')
+      .setLabel('⬅️ Zpět')
       .setStyle(ButtonStyle.Primary)
       .setDisabled(true);
 
     const nextButton = new ButtonBuilder()
       .setCustomId('next_page')
-      .setLabel('Next ➡️')
+      .setLabel('Další ➡️')
       .setStyle(ButtonStyle.Primary)
       .setDisabled(totalPages <= 1);
 
@@ -101,7 +100,7 @@ module.exports = {
 
     collector.on('collect', async i => {
       if (i.user.id !== interaction.user.id) {
-        return i.reply({ content: "These buttons aren't for you.", ephemeral: true });
+        return i.reply({ content: "Tato tlačítka, nejsou pro tebe.", ephemeral: true });
       }
 
       if (i.customId === 'prev_page') {

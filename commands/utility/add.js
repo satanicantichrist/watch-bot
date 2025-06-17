@@ -4,32 +4,32 @@ const tools = require("../../tools.js")
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('add')
-    .setDescription('Adds a movie.')
+    .setDescription('Přidá film do seznamu.')
     .addStringOption(option =>
       option.setName("name")
-        .setDescription("Movie name")
+        .setDescription("Název filmu")
         .setRequired(true)
     )
     .addIntegerOption(option =>
       option.setName("episodes")
-        .setDescription("Number of episodes")
+        .setDescription("Počet epizod")
     )
     .addBooleanOption(option =>
       option.setName("watched")
-        .setDescription("If it was watched")
+        .setDescription("Byl už vyděn")
     )
     .addStringOption(option =>
       option.setName("parts_watched")
-        .setDescription("Parts watched")
+        .setDescription("Vyděné epizody")
     )
     .addStringOption(option =>
       option.setName("genre")
-        .setDescription("Movie genre")
+        .setDescription("Žánr")
         .addChoices(tools.genreMap)
   )
     .addStringOption(option =>
       option.setName("score")
-        .setDescription("Score 1-5")
+        .setDescription("Hodnocení")
         .addChoices(
           { name: "Nehodnoceno", value: "0"},
           { name: "*", value: "1" },
@@ -54,20 +54,20 @@ module.exports = {
 
       const embed = new EmbedBuilder()
         .setColor("#2c0a41")
-        .setTitle("🎬 Movie Added")
-        .setDescription(`**${name}** has been added to your list.`)
+        .setTitle("🎬 Film přidán")
+        .setDescription(`**${name}** Byl přidán do seznamu`)
         .addFields(
-          { name: "Episodes", value: episodes.toString(), inline: true },
-          { name: "Watched", value: watched ? "✅ Yes" : "❌ No", inline: true },
-          { name: "Parts Watched", value: parts_watched, inline: true },
-          { name: "Genre", value: genre, inline: true },
-          { name: "Score", value: score !== null ? "⭐".repeat(score) + ` (${score}/5)` : "Not rated", inline: true }
+          { name: "Epizody", value: episodes.toString(), inline: true },
+          { name: "Vyděno", value: watched ? "✅ Ano" : "❌ Ne", inline: true },
+          { name: "Epizody vyděny", value: parts_watched, inline: true },
+          { name: "Žánr", value: tools.getGenreFromValue(genre), inline: true },
+          { name: "Hodnocení", value: score !== null ? "⭐".repeat(score) + ` (${score}/5)` : "Nehodnoceno", inline: true }
         );
 
       await interaction.reply({ embeds: [embed] });
     } catch (error) {
       console.error("Error adding movie:", error);
-      await interaction.reply({ content: "❌ Failed to add movie. Please try again later.", ephemeral: true });
+      await interaction.reply({ content: "❌ Nebylo možné přidat film.", ephemeral: true });
     }
   },
 };
