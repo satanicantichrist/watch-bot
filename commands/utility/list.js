@@ -1,14 +1,6 @@
-
-
-const {
-  SlashCommandBuilder,
-  EmbedBuilder,
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle
-} = require('discord.js');
-const db = require('../../db.js');
-const tools = require("../../tools.js")
+const { SlashCommandBuilder, EmbedBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
+const db = require("../../db.js");
+const tools = require("../../tools.js");
 
 const MOVIES_PER_PAGE = 5;
 
@@ -18,32 +10,29 @@ function paginateMovies(movies, page = 0) {
   const currentMovies = movies.slice(start, start + MOVIES_PER_PAGE);
 
   const embed = new EmbedBuilder()
-    .setTitle('🎬 Seznam filmů')
-    .setColor('#00bfff')
+    .setTitle("🎬 Seznam filmů")
+    .setColor("#00bfff")
     .setTimestamp()
     .setFooter({ text: `Strana ${page + 1} z ${totalPages}` });
 
   for (const movie of currentMovies) {
-    const watched = movie.watched === '1' ? '✅ Ano' : '❌ Ne';
-    const partsWatched = movie.parts_watched || 'N/A';
-    const watchedDate = movie.watched_date || 'N/A';
-    const score = movie.score
-      ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
-      : 'Nehodnoceno';
+    const watched = movie.watched === "1" ? "✅ Ano" : "❌ Ne";
+    const partsWatched = movie.parts_watched || "N/A";
+    const watchedDate = movie.watched_date || "N/A";
+    const score = movie.score ? "⭐".repeat(Number(movie.score)) + ` ${movie.score}/5` : "Nehodnoceno";
 
     const watchedLine =
-      movie.watched === '1' && Number(movie.parts) === 1
-        ? `• Viděno: ✅ Yes`
-        : `• Viděno: ${watched} (${partsWatched})`;
+      movie.watched === "1" && Number(movie.parts) === 1 ? `• Viděno: ✅ Yes` : `• Viděno: ${watched} (${partsWatched})`;
 
     const description = [
+      `• Trailer: ${movie.trailer ? `[Otevřít](${movie.trailer})` : "N/A"}`,
       `• Epizody: ${movie.parts}`,
       `• Žánr: ${tools.getGenreFromValue(movie.genre)}`,
       watchedLine,
       `• Přidáno dne: ${movie.added_date}`,
       `• Viděno dne: ${watchedDate}`,
       `• Hodnocení: ${score}`,
-    ].join('\n');
+    ].join("\n");
 
     embed.addFields({
       name: `🎬 ${movie.name} - ${movie.id}`,
@@ -56,23 +45,18 @@ function paginateMovies(movies, page = 0) {
 
 module.exports = {
   data: new SlashCommandBuilder()
-    .setName('list')
-    .setDescription('Seznam filmů v seznamu')
-    .addBooleanOption(option =>
-      option.setName('unwatched')
-        .setDescription('Seznam neviděných filmů v seznamu')
-    ),
+    .setName("list")
+    .setDescription("Seznam filmů v seznamu")
+    .addBooleanOption((option) => option.setName("unwatched").setDescription("Seznam neviděných filmů v seznamu")),
 
   async execute(interaction) {
     const movies = await db.list_movies();
-    const unwatchedOnly = interaction.options.getBoolean('unwatched');
-    const filteredMovies = unwatchedOnly
-      ? movies.filter(m => m.watched === '0')
-      : movies;
+    const unwatchedOnly = interaction.options.getBoolean("unwatched");
+    const filteredMovies = unwatchedOnly ? movies.filter((m) => m.watched === "0") : movies;
 
     if (filteredMovies.length === 0) {
       return interaction.reply({
-        content: 'Nebyly nalezeny žádné filmy.',
+        content: "Nebyly nalezeny žádné filmy.",
       });
     }
 
@@ -80,14 +64,14 @@ module.exports = {
     const { embed, totalPages } = paginateMovies(filteredMovies, page);
 
     const prevButton = new ButtonBuilder()
-      .setCustomId('prev_page')
-      .setLabel('⬅️ Zpět')
+      .setCustomId("prev_page")
+      .setLabel("⬅️ Zpět")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(true);
 
     const nextButton = new ButtonBuilder()
-      .setCustomId('next_page')
-      .setLabel('Další ➡️')
+      .setCustomId("next_page")
+      .setLabel("Další ➡️")
       .setStyle(ButtonStyle.Primary)
       .setDisabled(totalPages <= 1);
 
@@ -98,14 +82,14 @@ module.exports = {
 
     const collector = message.createMessageComponentCollector({ time: 60_000 });
 
-    collector.on('collect', async i => {
+    collector.on("collect", async (i) => {
       if (i.user.id !== interaction.user.id) {
         return i.reply({ content: "Tato tlačítka, nejsou pro tebe.", ephemeral: true });
       }
 
-      if (i.customId === 'prev_page') {
+      if (i.customId === "prev_page") {
         page--;
-      } else if (i.customId === 'next_page') {
+      } else if (i.customId === "next_page") {
         page++;
       }
 
@@ -116,11 +100,10 @@ module.exports = {
       await i.update({ embeds: [newEmbed], components: [row] });
     });
 
-    collector.on('end', () => {
+    collector.on("end", () => {
       prevButton.setDisabled(true);
       nextButton.setDisabled(true);
       interaction.editReply({ components: [row] }).catch(() => {});
     });
-  }
+  },
 };
-

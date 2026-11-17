@@ -1,22 +1,15 @@
 const { SlashCommandBuilder, EmbedBuilder } = require("discord.js");
 const { getQuery } = require("../../db.js");
-const tools = require("../../tools.js")
+const tools = require("../../tools.js");
 
 module.exports = {
   data: new SlashCommandBuilder()
     .setName("random")
     .setDescription("Náhodný film ze seznamu")
-    .addStringOption(option =>
-      option.setName("genre")
-        .setDescription("Filtrovat pomocí žánru")
-        .addChoices(tools.genreMap)
-        .setRequired(false)
+    .addStringOption((option) =>
+      option.setName("genre").setDescription("Filtrovat pomocí žánru").addChoices(tools.genreMap).setRequired(false),
     )
-    .addBooleanOption(option =>
-      option.setName("watched")
-        .setDescription("Filtrovat podle vidění")
-        .setRequired(false)
-    ),
+    .addBooleanOption((option) => option.setName("watched").setDescription("Filtrovat podle vidění").setRequired(false)),
 
   async execute(interaction) {
     const genre = interaction.options.getString("genre");
@@ -51,22 +44,24 @@ module.exports = {
         .setTitle(`🎬 ${movie.name}`)
         .setColor(0x00bfff)
         .addFields(
+          { name: "Trailer", value: `${movie.trailer ? `[Otevřít](${movie.trailer})` : "N/A"}`, inline: true },
           { name: "Epizody", value: movie.parts?.toString() || "N/A", inline: true },
-          { name: "Hodnocení", value: movie.score  ? '⭐'.repeat(Number(movie.score)) + ` ${movie.score}/5`
-      : 'Nehodnoceno', inline: true },
+          {
+            name: "Hodnocení",
+            value: movie.score ? "⭐".repeat(Number(movie.score)) + ` ${movie.score}/5` : "Nehodnoceno",
+            inline: true,
+          },
           { name: "Žánr", value: tools.getGenreFromValue(movie.genre) || "N/A", inline: true },
           { name: "Viděno", value: movie.watched == 1 ? "✅ Ano" : "❌ Ne", inline: true },
           { name: "Viděno dne", value: movie.watched_date || "N/A", inline: true },
           { name: "Viděné epizody", value: movie.parts_watched || "N/A", inline: true },
-          { name: "Přidáno dne", value: movie.added_date || "N/A", inline: false }
-        )
+          { name: "Přidáno dne", value: movie.added_date || "N/A", inline: false },
+        );
 
       await interaction.reply({ embeds: [embed] });
-
     } catch (error) {
       console.error("❌ Error in /random command:", error);
       await interaction.reply("❌ Nebylo možno vybrat film.");
     }
   },
 };
-

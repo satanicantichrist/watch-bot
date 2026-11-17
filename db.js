@@ -23,6 +23,7 @@ const db = new sqlite3.Database(dbFilePath, (err) => {
           watched_date TEXT,
           parts_watched TEXT,
           score TEXT,
+          trailer TEXT,
           genre TEXT
         );
       `;
@@ -76,14 +77,14 @@ function getAll(sql, params = []) {
 }
 
 // Add a new movie
-async function add_movie(name, parts, watched, parts_watched, score, genre) {
+async function add_movie(name, parts, watched, parts_watched, score, genre, trailer) {
   if (!name || typeof parts !== "number") {
     throw new Error("Invalid input for add_movie");
   }
   const now = new Date().toDateString();
   return runQuery(
-    `INSERT INTO movies (name, parts, added_date, watched, watched_date, parts_watched, score, genre) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    [name, parts, now, watched, "Never", parts_watched, score, genre],
+    `INSERT INTO movies (name, parts, added_date, watched, watched_date, parts_watched, score, genre, trailer) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    [name, parts, now, watched, "Never", parts_watched, score, genre, trailer],
   );
 }
 
@@ -91,6 +92,11 @@ async function add_movie(name, parts, watched, parts_watched, score, genre) {
 async function update_name(id, name) {
   if (!name) throw new Error("Name is required");
   return runQuery(`UPDATE movies SET name = ? WHERE id = ?`, [name, id]);
+}
+
+async function update_trailer(id, trailer) {
+  if (!trailer) throw new Error("Trailer is required");
+  return runQuery(`UPDATE movies SET trailer = ? WHERE id = ?`, [trailer, id]);
 }
 
 async function update_parts(id, parts) {
@@ -148,5 +154,6 @@ module.exports = {
   update_genre,
   remove_movie,
   list_movies,
+  update_trailer,
   getQuery,
 };
