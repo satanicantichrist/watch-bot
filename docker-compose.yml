@@ -1,6 +1,6 @@
 services:
   discord-bot:
-    image: watch-bot
+    image: watch-bot:latest
     container_name: discord-bot
     volumes:
       - ./watch-bot/db.db:/usr/src/app/db.db
